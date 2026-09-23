@@ -4,7 +4,7 @@ de:
       title: "Kugelung"
       none: "Aktuell findet keine Kugelung statt."
       load_error: "Die Daten konnten nicht geladen werden. Bitte lade die Seite neu."
-      period: "%{start} bis %{end}"
+      period: "%{start} Uhr bis %{end} Uhr"
       choice:
         black: "Schwarz"
         white: "Weiss"
@@ -16,7 +16,7 @@ de:
         done_hint: "Die Stimme ist geheim und kann nicht mehr geändert werden."
         starts_relative: "Beginnt %{relative}"
         ends_relative: "Endet %{relative}"
-        not_started: "Die Abstimmung beginnt am %{start}."
+        not_started: "Die Abstimmung beginnt am %{start} Uhr."
         closed: "Die Abstimmung ist beendet."
         not_eligible: "Du bist für diese Kugelung nicht stimmberechtigt."
       state:
