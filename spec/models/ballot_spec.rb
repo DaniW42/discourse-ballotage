@@ -1,0 +1,227 @@
+# frozen_string_literal: true
+
+RSpec.describe Ballotage::Ballot do
+  fab!(:user) { Fabricate(:user) }
+
+  def build_ballot(starts_at:, ends_at:, **attrs)
+    Ballotage::Ballot.create!(
+      title: "Test Ballot",
+      starts_at: starts_at,
+      ends_at: ends_at,
+      created_by_id: Fabricate(:admin).id,
+      **attrs,
+    )
+  end
+
+  describe "validations" do
+    it "requires ends_at to be after starts_at" do
+      ballot = Ballotage::Ballot.new(
+        title: "Bad Ballot",
+        starts_at: 1.day.from_now,
+        ends_at: 1.day.from_now,
+        created_by_id: user.id,
+      )
+
+      expect(ballot).not_to be_valid
+      expect(ballot.errors[:ends_at]).to be_present
+    end
+
+    it "requires ends_at to be strictly after starts_at, not merely equal" do
+      now = Time.zone.now
+      ballot = Ballotage::Ballot.new(
+        title: "Equal times",
+        starts_at: now,
+        ends_at: now,
+        created_by_id: user.id,
+      )
+
+      expect(ballot).not_to be_valid
+    end
+
+    it "is valid when ends_at is after starts_at" do
+      ballot = build_ballot(starts_at: 1.day.from_now, ends_at: 2.days.from_now)
+      expect(ballot).to be_valid
+    end
+
+    it "requires a title" do
+      ballot = Ballotage::Ballot.new(
+        starts_at: 1.day.from_now,
+        ends_at: 2.days.from_now,
+        created_by_id: user.id,
+      )
+      expect(ballot).not_to be_valid
+      expect(ballot.errors[:title]).to be_present
+    end
+  end
+
+  describe "state transitions over time" do
+    it "moves scheduled -> open -> ended as the clock advances" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+
+      expect(ballot.state).to eq("scheduled")
+
+      travel_to(90.minutes.from_now) { expect(ballot.state).to eq("open") }
+      travel_to(3.hours.from_now) { expect(ballot.state).to eq("ended") }
+    end
+
+    it "is cancelled regardless of the clock once cancelled_at is set" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      ballot.update!(cancelled_at: Time.zone.now)
+
+      expect(ballot.state).to eq("cancelled")
+
+      travel_to(3.hours.from_now) { expect(ballot.state).to eq("cancelled") }
+    end
+
+    it "reports open?, over?, cancellable? and finalizable? consistently with state" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      expect(ballot.open?).to eq(false)
+      expect(ballot.over?).to eq(false)
+      expect(ballot.cancellable?).to eq(true)
+      expect(ballot.finalizable?).to eq(false)
+
+      travel_to(90.minutes.from_now) do
+        expect(ballot.open?).to eq(true)
+        expect(ballot.over?).to eq(false)
+        expect(ballot.cancellable?).to eq(true)
+        expect(ballot.finalizable?).to eq(false)
+      end
+
+      travel_to(3.hours.from_now) do
+        expect(ballot.open?).to eq(false)
+        expect(ballot.over?).to eq(true)
+        expect(ballot.cancellable?).to eq(false)
+        expect(ballot.finalizable?).to eq(true)
+      end
+    end
+  end
+
+  describe "#cast_vote!" do
+    it "increments the right counter and records participation" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+
+      ballot.cast_vote!(user, "black")
+      ballot.reload
+
+      expect(ballot.black_count).to eq(1)
+      expect(ballot.white_count).to eq(0)
+      expect(ballot.voted?(user)).to eq(true)
+      expect(Ballotage::Participation.where(ballot_id: ballot.id, user_id: user.id).count).to eq(1)
+    end
+
+    it "increments white_count for a white vote" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+
+      ballot.cast_vote!(user, "white")
+      ballot.reload
+
+      expect(ballot.white_count).to eq(1)
+      expect(ballot.black_count).to eq(0)
+    end
+
+    it "raises AlreadyVoted on a second vote and leaves the counters unchanged" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      ballot.cast_vote!(user, "black")
+
+      expect { ballot.cast_vote!(user, "white") }.to raise_error(Ballotage::Ballot::AlreadyVoted)
+
+      ballot.reload
+      expect(ballot.black_count).to eq(1)
+      expect(ballot.white_count).to eq(0)
+      expect(Ballotage::Participation.where(ballot_id: ballot.id, user_id: user.id).count).to eq(1)
+    end
+
+    it "raises on an invalid choice" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+
+      expect { ballot.cast_vote!(user, "purple") }.to raise_error(Discourse::InvalidParameters)
+      ballot.reload
+      expect(ballot.black_count).to eq(0)
+      expect(ballot.white_count).to eq(0)
+    end
+
+    it "raises Discourse::InvalidAccess when the ballot is not open (scheduled)" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+
+      expect { ballot.cast_vote!(user, "black") }.to raise_error(Discourse::InvalidAccess)
+    end
+
+    it "raises Discourse::InvalidAccess when the ballot has ended" do
+      freeze_time
+      ballot = build_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+
+      expect { ballot.cast_vote!(user, "black") }.to raise_error(Discourse::InvalidAccess)
+    end
+
+    it "raises Discourse::InvalidAccess when the ballot was cancelled" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      ballot.update!(cancelled_at: Time.zone.now)
+
+      expect { ballot.cast_vote!(user, "black") }.to raise_error(Discourse::InvalidAccess)
+    end
+
+    it "does not change updated_at when a vote is cast" do
+      freeze_time
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      original_updated_at = ballot.reload.updated_at
+
+      travel_to(10.minutes.from_now) { ballot.cast_vote!(user, "black") }
+
+      expect(ballot.reload.updated_at).to eq(original_updated_at)
+    end
+  end
+
+  describe "#finalize!" do
+    it "wipes counters and participations and sets finalized_at" do
+      freeze_time
+      ballot = build_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      ballot.update_columns(black_count: 3, white_count: 5)
+      Ballotage::Participation.create!(ballot_id: ballot.id, user_id: user.id)
+
+      ballot.finalize!
+      ballot.reload
+
+      expect(ballot.black_count).to eq(0)
+      expect(ballot.white_count).to eq(0)
+      expect(ballot.finalized_at).to eq(Time.zone.now)
+      expect(ballot.finalized?).to eq(true)
+      expect(ballot.participations.count).to eq(0)
+    end
+  end
+
+  describe ".current" do
+    it "returns nil when there is no scheduled or open ballot" do
+      expect(Ballotage::Ballot.current).to be_nil
+    end
+
+    it "returns a scheduled ballot" do
+      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      expect(Ballotage::Ballot.current).to eq(ballot)
+    end
+
+    it "returns an open ballot" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      expect(Ballotage::Ballot.current).to eq(ballot)
+    end
+
+    it "does not return an ended ballot" do
+      build_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      expect(Ballotage::Ballot.current).to be_nil
+    end
+
+    it "does not return a cancelled ballot even if still within its window" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      ballot.update!(cancelled_at: Time.zone.now)
+      expect(Ballotage::Ballot.current).to be_nil
+    end
+  end
+end

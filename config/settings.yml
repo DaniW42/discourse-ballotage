@@ -1,0 +1,15 @@
+plugins:
+  ballotage_enabled:
+    default: false
+    client: true
+  ballotage_voting_group:
+    default: ""
+    type: group
+  ballotage_oversight_group:
+    default: ""
+    type: group
+  ballotage_oversight_can_manage:
+    default: false
+  ballotage_timezone:
+    default: "Europe/Berlin"
+    client: true

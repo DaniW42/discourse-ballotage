@@ -1,0 +1,96 @@
+# frozen_string_literal: true
+
+module Ballotage
+  class Ballot < ActiveRecord::Base
+    self.table_name = "ballotage_ballots"
+
+    CHOICES = %w[black white].freeze
+
+    class AlreadyVoted < StandardError
+    end
+
+    has_many :participations, class_name: "Ballotage::Participation", dependent: :delete_all
+
+    validates :title, presence: true, length: { maximum: 255 }
+    validates :starts_at, presence: true
+    validates :ends_at, presence: true
+    validate :ends_after_starts
+
+    scope :not_cancelled, -> { where(cancelled_at: nil) }
+
+    # The ballot that is scheduled or running right now, if any. Only one may
+    # exist at a time (enforced in the controller when creating).
+    def self.current
+      not_cancelled.where("ends_at > ?", Time.zone.now).order(:starts_at).first
+    end
+
+    # scheduled / open / ended / cancelled — derived from the clock, so nothing
+    # has to flip a status at the start or end time.
+    def state
+      return "cancelled" if cancelled_at
+      now = Time.zone.now
+      return "scheduled" if now < starts_at
+      return "open" if now < ends_at
+      "ended"
+    end
+
+    def open?
+      state == "open"
+    end
+
+    def over?
+      %w[ended cancelled].include?(state)
+    end
+
+    def finalized?
+      finalized_at.present?
+    end
+
+    def cancellable?
+      %w[scheduled open].include?(state)
+    end
+
+    def finalizable?
+      over? && !finalized?
+    end
+
+    def voted?(user)
+      participations.exists?(user_id: user.id)
+    end
+
+    # Records participation and bumps one anonymous counter in the same
+    # transaction. update_counters does not touch updated_at, so the ballot row
+    # carries no timestamp of the last vote either.
+    def cast_vote!(user, choice)
+      raise Discourse::InvalidParameters.new(:choice) unless CHOICES.include?(choice)
+
+      transaction do
+        # Row lock serialises votes against a concurrent cancel.
+        lock!
+        raise Discourse::InvalidAccess unless open?
+        begin
+          Participation.create!(ballot_id: id, user_id: user.id)
+        rescue ActiveRecord::RecordNotUnique
+          raise AlreadyVoted
+        end
+        self.class.update_counters(id, "#{choice}_count" => 1)
+      end
+    end
+
+    # Irreversibly removes the result and the participant list; only the
+    # title, period and whether it ran to the end or was cancelled remain.
+    def finalize!
+      transaction do
+        participations.delete_all
+        update_columns(black_count: 0, white_count: 0, finalized_at: Time.zone.now)
+      end
+    end
+
+    private
+
+    def ends_after_starts
+      return if starts_at.blank? || ends_at.blank?
+      errors.add(:ends_at, I18n.t("ballotage.errors.ends_before_starts")) if ends_at <= starts_at
+    end
+  end
+end

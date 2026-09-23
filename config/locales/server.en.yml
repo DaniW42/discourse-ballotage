@@ -1,0 +1,16 @@
+en:
+  site_settings:
+    ballotage_enabled: "Enable secret black/white ballots. The voting page is at /ballotage."
+    ballotage_voting_group: "Group whose members may vote."
+    ballotage_oversight_group: "Oversight group: sees at /ballotage/manage who has voted and, after the end, the result. Administrators always have access."
+    ballotage_oversight_can_manage: "Allow the oversight group to create, cancel and finalize ballots (otherwise administrators only)."
+    ballotage_timezone: "Time zone for ballot start and end times (IANA name, e.g. Europe/Berlin)."
+  ballotage:
+    errors:
+      ends_before_starts: "must be after the start"
+      ends_in_past: "The ballot's end is in the past."
+      already_active: "A ballot is already scheduled or open."
+      not_open: "This ballot is not open for voting."
+      already_voted: "You have already voted. A vote cannot be changed."
+      not_cancellable: "Only scheduled or open ballots can be cancelled."
+      not_finalizable: "Only ended or cancelled ballots can be finalized."

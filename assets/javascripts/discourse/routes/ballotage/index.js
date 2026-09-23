@@ -1,0 +1,17 @@
+import { ajax } from "discourse/lib/ajax";
+import DiscourseRoute from "discourse/routes/discourse";
+import { i18n } from "discourse-i18n";
+
+export default class BallotageIndexRoute extends DiscourseRoute {
+  async model() {
+    try {
+      return await ajax("/ballotage/current.json");
+    } catch {
+      return { loadError: true };
+    }
+  }
+
+  titleToken() {
+    return i18n("ballotage.title");
+  }
+}

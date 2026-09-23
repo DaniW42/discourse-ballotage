@@ -1,0 +1,16 @@
+de:
+  site_settings:
+    ballotage_enabled: "Kugelung (geheime Schwarz/Weiss-Abstimmung) aktivieren. Die Seite ist unter /ballotage erreichbar."
+    ballotage_voting_group: "Gruppe, deren Mitglieder abstimmen dürfen."
+    ballotage_oversight_group: "Aufsichtsgruppe: sieht in /ballotage/manage, wer abgestimmt hat, und nach dem Ende das Ergebnis. Administratoren haben immer Zugriff."
+    ballotage_oversight_can_manage: "Die Aufsichtsgruppe darf Kugelungen auch anlegen, stornieren und finalisieren (sonst nur Administratoren)."
+    ballotage_timezone: "Zeitzone für Beginn und Ende einer Kugelung (IANA-Name, z. B. Europe/Berlin)."
+  ballotage:
+    errors:
+      ends_before_starts: "muss nach dem Beginn liegen"
+      ends_in_past: "Das Ende der Kugelung liegt in der Vergangenheit."
+      already_active: "Es ist bereits eine Kugelung geplant oder läuft."
+      not_open: "Für diese Kugelung kann derzeit nicht abgestimmt werden."
+      already_voted: "Du hast bereits abgestimmt. Die Stimme kann nicht geändert werden."
+      not_cancellable: "Nur geplante oder laufende Kugelungen können storniert werden."
+      not_finalizable: "Nur beendete oder stornierte Kugelungen können finalisiert werden."

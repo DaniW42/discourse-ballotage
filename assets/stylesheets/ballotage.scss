@@ -1,0 +1,125 @@
+.ballotage-page {
+  max-width: 48rem;
+  margin: 1.5rem auto;
+
+  .ballotage-notice {
+    padding: 0.75rem 1rem;
+    background: var(--primary-very-low);
+    border-radius: var(--d-border-radius);
+  }
+
+  .ballotage-notice--done {
+    background: var(--success-low);
+  }
+
+  .ballotage-hint {
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+  }
+
+  .ballotage-ballot__period {
+    color: var(--primary-high);
+  }
+}
+
+.ballotage-choices {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+
+  .ballotage-choice {
+    flex: 1;
+    min-height: 4rem;
+    font-size: var(--font-up-2);
+    border: 2px solid var(--primary);
+  }
+
+  // Fixed colours on purpose: these represent the physical balls, not theme accents.
+  .ballotage-choice--black {
+    background: #111;
+    color: #fff;
+  }
+
+  .ballotage-choice--white {
+    background: #fff;
+    color: #111;
+  }
+}
+
+.ballotage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  input[type="text"] {
+    width: 100%;
+  }
+
+  .ballotage-form__dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .ballotage-form__checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  button[type="submit"] {
+    align-self: flex-start;
+  }
+}
+
+.ballotage-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+
+  .ballotage-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .ballotage-badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 1rem;
+    background: var(--primary-low);
+    font-size: var(--font-down-1);
+    white-space: nowrap;
+  }
+
+  &.ballotage-card--open .ballotage-badge {
+    background: var(--success-low);
+  }
+
+  .ballotage-result {
+    display: flex;
+    gap: 2rem;
+    font-size: var(--font-up-1);
+  }
+
+  .ballotage-voters {
+    columns: 2;
+  }
+
+  .ballotage-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+}
