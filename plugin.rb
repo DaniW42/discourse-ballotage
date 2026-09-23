@@ -3,7 +3,7 @@
 # name: discourse-ballotage
 # about: Secret black/white-ball ballots (ballotage) for a member group, with participation oversight
 # version: 1.0.0
-# authors: Daniel Weber
+# authors: DaniW42
 # url: https://github.com/DaniW42/discourse-ballotage
 # required_version: 2026.7.0
 
