@@ -11,6 +11,8 @@ enabled_site_setting :ballotage_enabled
 
 register_asset "stylesheets/ballotage.scss"
 
+%w[calendar-days check circle-info clock].each { |i| register_svg_icon i }
+
 module ::Ballotage
   PLUGIN_NAME = "discourse-ballotage"
 end

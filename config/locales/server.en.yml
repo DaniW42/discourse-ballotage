@@ -4,6 +4,7 @@ en:
     ballotage_voting_group: "Group whose members may vote."
     ballotage_oversight_group: "Oversight group: sees at /ballotage/manage who has voted and, after the end, the result. Administrators always have access."
     ballotage_oversight_can_manage: "Allow the oversight group to create, cancel and finalize ballots (otherwise administrators only)."
+    ballotage_info_text: "Optional notice shown on /ballotage below the content, e.g. who is eligible to vote. Leave empty to show no notice."
     ballotage_timezone: "Time zone for ballot start and end times (IANA name, e.g. Europe/Berlin)."
   ballotage:
     errors:

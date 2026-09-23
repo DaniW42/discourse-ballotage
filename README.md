@@ -60,6 +60,7 @@ handled organizationally (e.g. restrict database/console access during ballots).
 | `ballotage_voting_group` | *(none)* | Group whose members may vote. |
 | `ballotage_oversight_group` | *(none)* | Group that can see, at `/ballotage/manage`, who has voted and — after the end — the result. |
 | `ballotage_oversight_can_manage` | `false` | Whether the oversight group may also create, cancel and finalize ballots (otherwise only admins can). |
+| `ballotage_info_text` | *(empty)* | Optional plain-text notice shown below the content on `/ballotage`, e.g. who is eligible. Nothing is shown when empty. |
 | `ballotage_timezone` | `Europe/Berlin` | IANA time zone used for ballot start/end times. |
 
 ## Permissions

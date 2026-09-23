@@ -24,6 +24,9 @@ module Ballotage
       render json: {
                can_vote: can_vote,
                can_oversee: guardian.can_oversee_ballotage?,
+               # Served here rather than as a client setting so it isn't in the
+               # site settings anonymous visitors can read.
+               info_text: SiteSetting.ballotage_info_text.presence,
                ballot:
                  visible ? voter_ballot_json(ballot, has_voted: can_vote && ballot.voted?(current_user)) : nil,
              }

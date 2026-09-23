@@ -160,47 +160,53 @@ export default class BallotageManage extends Component {
                   {{on "input" (fn this.updateField "title")}}
                 />
               </label>
+              {{! Start and end each keep their day and optional time together,
+                  so ticking "custom times" doesn't reflow the whole row. }}
               <div class="ballotage-form__dates">
-                <label>
-                  {{i18n "ballotage.manage.form.start_date"}}
-                  <input
-                    type="date"
-                    required
-                    value={{this.startDate}}
-                    {{on "input" (fn this.updateField "startDate")}}
-                  />
-                </label>
-                {{#if this.customTimes}}
-                  <label>
-                    {{i18n "ballotage.manage.form.start_time"}}
+                <div class="ballotage-form__when">
+                  <label class="ballotage-form__date">
+                    {{i18n "ballotage.manage.form.start_date"}}
                     <input
-                      type="time"
+                      type="date"
                       required
-                      value={{this.startTime}}
-                      {{on "input" (fn this.updateField "startTime")}}
+                      value={{this.startDate}}
+                      {{on "input" (fn this.updateField "startDate")}}
                     />
                   </label>
-                {{/if}}
-                <label>
-                  {{i18n "ballotage.manage.form.end_date"}}
-                  <input
-                    type="date"
-                    required
-                    value={{this.endDate}}
-                    {{on "input" (fn this.updateField "endDate")}}
-                  />
-                </label>
-                {{#if this.customTimes}}
-                  <label>
-                    {{i18n "ballotage.manage.form.end_time"}}
+                  {{#if this.customTimes}}
+                    <label class="ballotage-form__time">
+                      {{i18n "ballotage.manage.form.start_time"}}
+                      <input
+                        type="time"
+                        required
+                        value={{this.startTime}}
+                        {{on "input" (fn this.updateField "startTime")}}
+                      />
+                    </label>
+                  {{/if}}
+                </div>
+                <div class="ballotage-form__when">
+                  <label class="ballotage-form__date">
+                    {{i18n "ballotage.manage.form.end_date"}}
                     <input
-                      type="time"
+                      type="date"
                       required
-                      value={{this.endTime}}
-                      {{on "input" (fn this.updateField "endTime")}}
+                      value={{this.endDate}}
+                      {{on "input" (fn this.updateField "endDate")}}
                     />
                   </label>
-                {{/if}}
+                  {{#if this.customTimes}}
+                    <label class="ballotage-form__time">
+                      {{i18n "ballotage.manage.form.end_time"}}
+                      <input
+                        type="time"
+                        required
+                        value={{this.endTime}}
+                        {{on "input" (fn this.updateField "endTime")}}
+                      />
+                    </label>
+                  {{/if}}
+                </div>
               </div>
               <label class="ballotage-form__checkbox">
                 <input

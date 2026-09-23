@@ -35,6 +35,17 @@ RSpec.describe Ballotage::BallotsController do
   end
 
   describe "GET /ballotage/current.json" do
+    it "returns the info text when set and null when empty" do
+      sign_in(voter)
+
+      get "/ballotage/current.json"
+      expect(response.parsed_body["info_text"]).to be_nil
+
+      SiteSetting.ballotage_info_text = "Only members may vote."
+      get "/ballotage/current.json"
+      expect(response.parsed_body["info_text"]).to eq("Only members may vote.")
+    end
+
     it "shows the ballot to a voter, with has_voted false before voting" do
       freeze_time
       create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)

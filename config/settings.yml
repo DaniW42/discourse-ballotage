@@ -10,6 +10,9 @@ plugins:
     type: group
   ballotage_oversight_can_manage:
     default: false
+  ballotage_info_text:
+    default: ""
+    textarea: true
   ballotage_timezone:
     default: "Europe/Berlin"
     client: true
