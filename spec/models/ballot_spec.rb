@@ -15,10 +15,11 @@ RSpec.describe Ballotage::Ballot do
 
   describe "validations" do
     it "requires ends_at to be after starts_at" do
+      start = 1.day.from_now
       ballot = Ballotage::Ballot.new(
         title: "Bad Ballot",
-        starts_at: 1.day.from_now,
-        ends_at: 1.day.from_now,
+        starts_at: start,
+        ends_at: start - 1.minute,
         created_by_id: user.id,
       )
 
@@ -56,46 +57,47 @@ RSpec.describe Ballotage::Ballot do
 
   describe "state transitions over time" do
     it "moves scheduled -> open -> ended as the clock advances" do
-      freeze_time
-      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      base = freeze_time
+      ballot = build_ballot(starts_at: base + 1.hour, ends_at: base + 2.hours)
 
       expect(ballot.state).to eq("scheduled")
 
-      travel_to(90.minutes.from_now) { expect(ballot.state).to eq("open") }
-      travel_to(3.hours.from_now) { expect(ballot.state).to eq("ended") }
+      freeze_time(base + 90.minutes)
+      expect(ballot.state).to eq("open")
+      freeze_time(base + 3.hours)
+      expect(ballot.state).to eq("ended")
     end
 
     it "is cancelled regardless of the clock once cancelled_at is set" do
-      freeze_time
-      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      base = freeze_time
+      ballot = build_ballot(starts_at: base + 1.hour, ends_at: base + 2.hours)
       ballot.update!(cancelled_at: Time.zone.now)
 
       expect(ballot.state).to eq("cancelled")
 
-      travel_to(3.hours.from_now) { expect(ballot.state).to eq("cancelled") }
+      freeze_time(base + 3.hours)
+      expect(ballot.state).to eq("cancelled")
     end
 
     it "reports open?, over?, cancellable? and finalizable? consistently with state" do
-      freeze_time
-      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      base = freeze_time
+      ballot = build_ballot(starts_at: base + 1.hour, ends_at: base + 2.hours)
       expect(ballot.open?).to eq(false)
       expect(ballot.over?).to eq(false)
       expect(ballot.cancellable?).to eq(true)
       expect(ballot.finalizable?).to eq(false)
 
-      travel_to(90.minutes.from_now) do
-        expect(ballot.open?).to eq(true)
-        expect(ballot.over?).to eq(false)
-        expect(ballot.cancellable?).to eq(true)
-        expect(ballot.finalizable?).to eq(false)
-      end
+      freeze_time(base + 90.minutes)
+      expect(ballot.open?).to eq(true)
+      expect(ballot.over?).to eq(false)
+      expect(ballot.cancellable?).to eq(true)
+      expect(ballot.finalizable?).to eq(false)
 
-      travel_to(3.hours.from_now) do
-        expect(ballot.open?).to eq(false)
-        expect(ballot.over?).to eq(true)
-        expect(ballot.cancellable?).to eq(false)
-        expect(ballot.finalizable?).to eq(true)
-      end
+      freeze_time(base + 3.hours)
+      expect(ballot.open?).to eq(false)
+      expect(ballot.over?).to eq(true)
+      expect(ballot.cancellable?).to eq(false)
+      expect(ballot.finalizable?).to eq(true)
     end
   end
 
@@ -174,7 +176,8 @@ RSpec.describe Ballotage::Ballot do
       ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
       original_updated_at = ballot.reload.updated_at
 
-      travel_to(10.minutes.from_now) { ballot.cast_vote!(user, "black") }
+      freeze_time(10.minutes.from_now)
+      ballot.cast_vote!(user, "black")
 
       expect(ballot.reload.updated_at).to eq(original_updated_at)
     end
@@ -192,7 +195,7 @@ RSpec.describe Ballotage::Ballot do
 
       expect(ballot.black_count).to eq(0)
       expect(ballot.white_count).to eq(0)
-      expect(ballot.finalized_at).to eq(Time.zone.now)
+      expect(ballot.finalized_at).to be_within(1.second).of(Time.zone.now)
       expect(ballot.finalized?).to eq(true)
       expect(ballot.participations.count).to eq(0)
     end

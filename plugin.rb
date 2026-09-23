@@ -17,24 +17,11 @@ end
 
 require_relative "lib/ballotage/engine"
 
+# Models and controllers under app/ are autoloaded by the engine; routes live in
+# config/routes.rb, which the engine reloads with the route set. Routes drawn
+# from after_initialize are lost on reload and every endpoint 404s.
 after_initialize do
-  require_relative "app/models/ballotage/ballot"
-  require_relative "app/models/ballotage/participation"
-  require_relative "app/controllers/ballotage/ballots_controller"
   require_relative "lib/ballotage/guardian_extension"
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
-
-  Ballotage::Engine.routes.draw do
-    get "/" => "ballots#page"
-    get "/manage" => "ballots#page"
-    get "/current" => "ballots#current"
-    post "/vote" => "ballots#vote"
-    get "/ballots" => "ballots#index"
-    post "/ballots" => "ballots#create"
-    post "/ballots/:id/cancel" => "ballots#cancel"
-    post "/ballots/:id/finalize" => "ballots#finalize"
-  end
-
-  Discourse::Application.routes.append { mount ::Ballotage::Engine, at: "/ballotage" }
 end

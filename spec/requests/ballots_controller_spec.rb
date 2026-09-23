@@ -17,7 +17,7 @@ RSpec.describe Ballotage::BallotsController do
 
   def create_ballot(starts_at:, ends_at:, **attrs)
     Ballotage::Ballot.create!(
-      title: "Lodge Ballot",
+      title: "Test Ballot",
       starts_at: starts_at,
       ends_at: ends_at,
       created_by_id: admin.id,
