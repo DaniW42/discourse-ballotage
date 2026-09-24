@@ -5,6 +5,7 @@
 # version: 1.0.0
 # authors: DaniW42
 # url: https://github.com/DaniW42/discourse-ballotage
+# meta_topic_id: 413266
 # required_version: 2026.7.0
 
 enabled_site_setting :ballotage_enabled
