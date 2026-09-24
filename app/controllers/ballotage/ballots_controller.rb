@@ -53,7 +53,14 @@ module Ballotage
 
     # GET /ballotage/ballots.json — management page.
     def index
-      ballots = Ballot.includes(participations: :user).order(starts_at: :desc)
+      # The scheduled/open ballot (at most one) first, then newest start first;
+      # id breaks ties so ballots starting at the same time keep a stable order.
+      ballots =
+        Ballot
+          .includes(participations: :user)
+          .order(starts_at: :desc, id: :desc)
+          .partition { |b| b.cancellable? }
+          .flatten
       render json: {
                can_manage: guardian.can_manage_ballotage?,
                eligible_count: eligible_count,

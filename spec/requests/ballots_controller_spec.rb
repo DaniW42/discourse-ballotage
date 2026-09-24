@@ -459,6 +459,25 @@ RSpec.describe Ballotage::BallotsController do
     end
   end
 
+  describe "GET /ballotage/ballots.json ordering" do
+    it "lists the active ballot first, then newest start first, newest created on ties" do
+      freeze_time
+      same_start = 1.hour.ago
+      cancelled = create_ballot(starts_at: same_start, ends_at: 2.days.from_now)
+      cancelled.update!(cancelled_at: Time.zone.now)
+      older = create_ballot(starts_at: 5.days.ago, ends_at: 4.days.ago)
+      open = create_ballot(starts_at: same_start, ends_at: 3.days.from_now)
+      later_cancelled = create_ballot(starts_at: same_start, ends_at: 2.days.from_now)
+      later_cancelled.update!(cancelled_at: Time.zone.now)
+      sign_in(admin)
+
+      get "/ballotage/ballots.json"
+
+      ids = response.parsed_body["ballots"].map { |b| b["id"] }
+      expect(ids).to eq([open.id, later_cancelled.id, cancelled.id, older.id])
+    end
+  end
+
   describe "ballot JSON" do
     it "marks only finalized ballots as deletable" do
       freeze_time
