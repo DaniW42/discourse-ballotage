@@ -98,3 +98,24 @@ module Ballotage
     end
   end
 end
+
+# == Schema Information
+#
+# Table name: ballotage_ballots
+#
+#  id            :bigint           not null, primary key
+#  black_count   :integer          default(0), not null
+#  cancelled_at  :datetime
+#  ends_at       :datetime         not null
+#  finalized_at  :datetime
+#  starts_at     :datetime         not null
+#  title         :string           not null
+#  white_count   :integer          default(0), not null
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  created_by_id :bigint           not null
+#
+# Indexes
+#
+#  index_ballotage_ballots_on_ends_at  (ends_at)
+#
