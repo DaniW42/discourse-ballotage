@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe Ballotage::GuardianExtension do
-  fab!(:voting_group) { Fabricate(:group) }
-  fab!(:oversight_group) { Fabricate(:group) }
+  fab!(:voting_group, :group)
+  fab!(:oversight_group, :group)
   fab!(:voter) { Fabricate(:user, group_ids: [voting_group.id]) }
   fab!(:overseer) { Fabricate(:user, group_ids: [oversight_group.id]) }
-  fab!(:plain_user) { Fabricate(:user) }
-  fab!(:admin) { Fabricate(:admin) }
+  fab!(:plain_user, :user)
+  fab!(:admin)
 
   before do
     SiteSetting.ballotage_enabled = true

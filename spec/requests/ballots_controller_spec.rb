@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 RSpec.describe Ballotage::BallotsController do
-  fab!(:voting_group) { Fabricate(:group) }
-  fab!(:oversight_group) { Fabricate(:group) }
+  fab!(:voting_group, :group)
+  fab!(:oversight_group, :group)
   fab!(:voter) { Fabricate(:user, group_ids: [voting_group.id]) }
   fab!(:other_voter) { Fabricate(:user, username: "avoter", group_ids: [voting_group.id]) }
   fab!(:overseer) { Fabricate(:user, group_ids: [oversight_group.id]) }
-  fab!(:plain_user) { Fabricate(:user) }
-  fab!(:admin) { Fabricate(:admin) }
+  fab!(:plain_user, :user)
+  fab!(:admin)
 
   before do
     SiteSetting.ballotage_enabled = true
@@ -232,7 +232,9 @@ RSpec.describe Ballotage::BallotsController do
 
       entry = response.parsed_body["ballots"].first
       expect(entry["finalized"]).to eq(true)
-      %w[voters voter_count black_count white_count].each { |key| expect(entry).not_to have_key(key) }
+      %w[voters voter_count black_count white_count].each do |key|
+        expect(entry).not_to have_key(key)
+      end
     end
   end
 
@@ -251,7 +253,12 @@ RSpec.describe Ballotage::BallotsController do
       freeze_time
       sign_in(admin)
 
-      post "/ballotage/ballots.json", params: { title: "Spring Ballot", start_date: start_date, end_date: end_date }
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Spring Ballot",
+             start_date: start_date,
+             end_date: end_date,
+           }
 
       expect(response.status).to eq(201)
     end
@@ -260,11 +267,20 @@ RSpec.describe Ballotage::BallotsController do
       freeze_time
       sign_in(admin)
 
-      post "/ballotage/ballots.json", params: { title: "Spring Ballot", start_date: start_date, end_date: end_date }
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Spring Ballot",
+             start_date: start_date,
+             end_date: end_date,
+           }
 
       ballot = Ballotage::Ballot.last
-      expect(ballot.starts_at).to eq(ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 00:01"))
-      expect(ballot.ends_at).to eq(ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 23:59"))
+      expect(ballot.starts_at).to eq(
+        ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 00:01"),
+      )
+      expect(ballot.ends_at).to eq(
+        ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 23:59"),
+      )
     end
 
     it "accepts custom start and end times" do
@@ -281,8 +297,12 @@ RSpec.describe Ballotage::BallotsController do
            }
 
       ballot = Ballotage::Ballot.last
-      expect(ballot.starts_at).to eq(ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 09:30"))
-      expect(ballot.ends_at).to eq(ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 18:15"))
+      expect(ballot.starts_at).to eq(
+        ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 09:30"),
+      )
+      expect(ballot.ends_at).to eq(
+        ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 18:15"),
+      )
     end
 
     it "returns 422 when a ballot is already scheduled or open" do
@@ -290,7 +310,12 @@ RSpec.describe Ballotage::BallotsController do
       create_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
       sign_in(admin)
 
-      post "/ballotage/ballots.json", params: { title: "Second Ballot", start_date: start_date, end_date: end_date }
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Second Ballot",
+             start_date: start_date,
+             end_date: end_date,
+           }
 
       expect(response.status).to eq(422)
     end
@@ -313,7 +338,12 @@ RSpec.describe Ballotage::BallotsController do
       SiteSetting.ballotage_oversight_can_manage = false
       sign_in(overseer)
 
-      post "/ballotage/ballots.json", params: { title: "Spring Ballot", start_date: start_date, end_date: end_date }
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Spring Ballot",
+             start_date: start_date,
+             end_date: end_date,
+           }
 
       expect(response.status).to eq(403)
     end
@@ -323,7 +353,12 @@ RSpec.describe Ballotage::BallotsController do
       SiteSetting.ballotage_oversight_can_manage = true
       sign_in(overseer)
 
-      post "/ballotage/ballots.json", params: { title: "Spring Ballot", start_date: start_date, end_date: end_date }
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Spring Ballot",
+             start_date: start_date,
+             end_date: end_date,
+           }
 
       expect(response.status).to eq(201)
     end

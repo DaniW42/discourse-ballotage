@@ -28,7 +28,13 @@ module Ballotage
                # site settings anonymous visitors can read.
                info_text: SiteSetting.ballotage_info_text.presence,
                ballot:
-                 visible ? voter_ballot_json(ballot, has_voted: can_vote && ballot.voted?(current_user)) : nil,
+                 (
+                   if visible
+                     voter_ballot_json(ballot, has_voted: can_vote && ballot.voted?(current_user))
+                   else
+                     nil
+                   end
+                 ),
              }
     end
 
@@ -37,9 +43,7 @@ module Ballotage
       raise Discourse::InvalidAccess unless guardian.can_vote_in_ballotage?
 
       ballot = Ballot.find(params.require(:ballot_id))
-      unless ballot.open?
-        return render_json_error(I18n.t("ballotage.errors.not_open"), status: 422)
-      end
+      return render_json_error(I18n.t("ballotage.errors.not_open"), status: 422) unless ballot.open?
 
       begin
         ballot.cast_vote!(current_user, params.require(:choice).to_s)

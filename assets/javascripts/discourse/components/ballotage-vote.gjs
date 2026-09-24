@@ -5,7 +5,7 @@ import { on } from "@ember/modifier";
 import { action } from "@ember/object";
 import { LinkTo } from "@ember/routing";
 import { service } from "@ember/service";
-import { htmlSafe } from "@ember/template";
+import { trustHTML } from "@ember/template";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import { eq, or } from "discourse/truth-helpers";
@@ -64,7 +64,7 @@ export default class BallotageVote extends Component {
 
   get progressStyle() {
     const pct = elapsedPercent(this.ballot?.starts_at, this.ballot?.ends_at);
-    return htmlSafe(`width: ${pct}%`);
+    return trustHTML(`width: ${pct}%`);
   }
 
   get mayVote() {
@@ -105,13 +105,19 @@ export default class BallotageVote extends Component {
       {{else if this.ballot}}
         <section class="ballotage-panel ballotage-panel--{{this.ballot.state}}">
           <header class="ballotage-panel__header">
-            <span class="ballotage-status ballotage-status--{{this.ballot.state}}">
+            <span
+              class="ballotage-status ballotage-status--{{this.ballot.state}}"
+            >
               {{this.stateLabel}}
             </span>
             <h3 class="ballotage-panel__title">{{this.ballot.title}}</h3>
             <p class="ballotage-panel__meta">
               {{dIcon "calendar-days"}}
-              <span>{{i18n "ballotage.period" start=this.startsAt end=this.endsAt}}</span>
+              <span>{{i18n
+                  "ballotage.period"
+                  start=this.startsAt
+                  end=this.endsAt
+                }}</span>
             </p>
             {{#if this.timeHint}}
               <p class="ballotage-panel__meta">
@@ -121,7 +127,10 @@ export default class BallotageVote extends Component {
             {{/if}}
             {{#if (eq this.ballot.state "open")}}
               <div class="ballotage-progress" aria-hidden="true">
-                <span class="ballotage-progress__bar" style={{this.progressStyle}}></span>
+                <span
+                  class="ballotage-progress__bar"
+                  style={{this.progressStyle}}
+                ></span>
               </div>
             {{/if}}
           </header>
@@ -135,12 +144,18 @@ export default class BallotageVote extends Component {
               <div class="ballotage-done">
                 <span class="ballotage-done__icon">{{dIcon "check"}}</span>
                 <div>
-                  <p class="ballotage-done__title">{{i18n "ballotage.vote.done"}}</p>
-                  <p class="ballotage-done__text">{{i18n "ballotage.vote.done_hint"}}</p>
+                  <p class="ballotage-done__title">{{i18n
+                      "ballotage.vote.done"
+                    }}</p>
+                  <p class="ballotage-done__text">{{i18n
+                      "ballotage.vote.done_hint"
+                    }}</p>
                 </div>
               </div>
             {{else if this.mayVote}}
-              <p class="ballotage-panel__text">{{i18n "ballotage.vote.instructions"}}</p>
+              <p class="ballotage-panel__text">{{i18n
+                  "ballotage.vote.instructions"
+                }}</p>
               <div class="ballotage-choices">
                 <button
                   type="button"
@@ -148,8 +163,13 @@ export default class BallotageVote extends Component {
                   disabled={{this.submitting}}
                   {{on "click" (fn this.vote "black")}}
                 >
-                  <span class="ballotage-choice__ball" aria-hidden="true"></span>
-                  <span class="ballotage-choice__label">{{i18n "ballotage.choice.black"}}</span>
+                  <span
+                    class="ballotage-choice__ball"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="ballotage-choice__label">{{i18n
+                      "ballotage.choice.black"
+                    }}</span>
                 </button>
                 <button
                   type="button"
@@ -157,14 +177,23 @@ export default class BallotageVote extends Component {
                   disabled={{this.submitting}}
                   {{on "click" (fn this.vote "white")}}
                 >
-                  <span class="ballotage-choice__ball" aria-hidden="true"></span>
-                  <span class="ballotage-choice__label">{{i18n "ballotage.choice.white"}}</span>
+                  <span
+                    class="ballotage-choice__ball"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="ballotage-choice__label">{{i18n
+                      "ballotage.choice.white"
+                    }}</span>
                 </button>
               </div>
             {{else if @data.can_vote}}
-              <p class="ballotage-panel__text">{{i18n "ballotage.vote.closed"}}</p>
+              <p class="ballotage-panel__text">{{i18n
+                  "ballotage.vote.closed"
+                }}</p>
             {{else}}
-              <p class="ballotage-panel__text">{{i18n "ballotage.vote.not_eligible"}}</p>
+              <p class="ballotage-panel__text">{{i18n
+                  "ballotage.vote.not_eligible"
+                }}</p>
             {{/if}}
           </div>
         </section>
@@ -189,7 +218,9 @@ export default class BallotageVote extends Component {
 
       {{#if @data.can_oversee}}
         <p class="ballotage-manage-link">
-          <LinkTo @route="ballotage.manage">{{i18n "ballotage.manage.link"}}</LinkTo>
+          <LinkTo @route="ballotage.manage">{{i18n
+              "ballotage.manage.link"
+            }}</LinkTo>
         </p>
       {{/if}}
     </div>

@@ -109,7 +109,8 @@ export default class BallotageManage extends Component {
   cancel(ballot) {
     this.dialog.yesNoConfirm({
       message: i18n("ballotage.manage.confirm_cancel", { title: ballot.title }),
-      didConfirm: () => this.post(`/ballotage/ballots/${ballot.id}/cancel.json`),
+      didConfirm: () =>
+        this.post(`/ballotage/ballots/${ballot.id}/cancel.json`),
     });
   }
 
@@ -117,7 +118,9 @@ export default class BallotageManage extends Component {
   finalize(ballot) {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.finalize_title"),
-      message: i18n("ballotage.manage.confirm_finalize", { title: ballot.title }),
+      message: i18n("ballotage.manage.confirm_finalize", {
+        title: ballot.title,
+      }),
       confirmButtonLabel: "ballotage.manage.finalize",
       didConfirm: () =>
         this.post(`/ballotage/ballots/${ballot.id}/finalize.json`),
@@ -146,16 +149,22 @@ export default class BallotageManage extends Component {
   <template>
     <div class="ballotage-page ballotage-manage">
       <h2>{{i18n "ballotage.manage.title"}}</h2>
-      <p><LinkTo @route="ballotage.index">{{i18n "ballotage.manage.back"}}</LinkTo></p>
+      <p><LinkTo @route="ballotage.index">{{i18n
+            "ballotage.manage.back"
+          }}</LinkTo></p>
 
       {{#if @data.forbidden}}
-        <div class="alert alert-error">{{i18n "ballotage.manage.forbidden"}}</div>
+        <div class="alert alert-error">{{i18n
+            "ballotage.manage.forbidden"
+          }}</div>
       {{else if @data.loadError}}
         <div class="alert alert-error">{{i18n "ballotage.load_error"}}</div>
       {{else}}
         {{#if @data.can_manage}}
           {{#if this.hasActiveBallot}}
-            <p class="ballotage-notice">{{i18n "ballotage.manage.one_at_a_time"}}</p>
+            <p class="ballotage-notice">{{i18n
+                "ballotage.manage.one_at_a_time"
+              }}</p>
           {{else}}
             <form class="ballotage-form" {{on "submit" this.create}}>
               <h3>{{i18n "ballotage.manage.new"}}</h3>
@@ -227,9 +236,15 @@ export default class BallotageManage extends Component {
                 {{i18n "ballotage.manage.form.custom_times"}}
               </label>
               {{#unless this.customTimes}}
-                <p class="ballotage-hint">{{i18n "ballotage.manage.form.default_times_hint"}}</p>
+                <p class="ballotage-hint">{{i18n
+                    "ballotage.manage.form.default_times_hint"
+                  }}</p>
               {{/unless}}
-              <button type="submit" class="btn btn-primary" disabled={{this.submitting}}>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                disabled={{this.submitting}}
+              >
                 {{i18n "ballotage.manage.form.submit"}}
               </button>
             </form>
@@ -254,7 +269,8 @@ export default class BallotageManage extends Component {
                   <summary>{{i18n "ballotage.manage.voters"}}</summary>
                   <ul class="ballotage-voters">
                     {{#each row.voters as |voter|}}
-                      <li>{{voter.username}}{{#if voter.name}} ({{voter.name}}){{/if}}</li>
+                      <li>{{voter.username}}{{#if voter.name}}
+                          ({{voter.name}}){{/if}}</li>
                     {{/each}}
                   </ul>
                 </details>
@@ -263,14 +279,18 @@ export default class BallotageManage extends Component {
               {{#if row.over}}
                 <div class="ballotage-result">
                   <span class="ballotage-result__black">
-                    {{i18n "ballotage.choice.black"}}: <strong>{{row.black_count}}</strong>
+                    {{i18n "ballotage.choice.black"}}:
+                    <strong>{{row.black_count}}</strong>
                   </span>
                   <span class="ballotage-result__white">
-                    {{i18n "ballotage.choice.white"}}: <strong>{{row.white_count}}</strong>
+                    {{i18n "ballotage.choice.white"}}:
+                    <strong>{{row.white_count}}</strong>
                   </span>
                 </div>
               {{else}}
-                <p class="ballotage-hint">{{i18n "ballotage.manage.result_after_end"}}</p>
+                <p class="ballotage-hint">{{i18n
+                    "ballotage.manage.result_after_end"
+                  }}</p>
               {{/if}}
             {{/unless}}
 

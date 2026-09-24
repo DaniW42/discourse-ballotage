@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Ballotage::Ballot do
-  fab!(:user) { Fabricate(:user) }
+  fab!(:user)
 
   def build_ballot(starts_at:, ends_at:, **attrs)
     Ballotage::Ballot.create!(
@@ -16,12 +16,13 @@ RSpec.describe Ballotage::Ballot do
   describe "validations" do
     it "requires ends_at to be after starts_at" do
       start = 1.day.from_now
-      ballot = Ballotage::Ballot.new(
-        title: "Bad Ballot",
-        starts_at: start,
-        ends_at: start - 1.minute,
-        created_by_id: user.id,
-      )
+      ballot =
+        Ballotage::Ballot.new(
+          title: "Bad Ballot",
+          starts_at: start,
+          ends_at: start - 1.minute,
+          created_by_id: user.id,
+        )
 
       expect(ballot).not_to be_valid
       expect(ballot.errors[:ends_at]).to be_present
@@ -29,12 +30,13 @@ RSpec.describe Ballotage::Ballot do
 
     it "requires ends_at to be strictly after starts_at, not merely equal" do
       now = Time.zone.now
-      ballot = Ballotage::Ballot.new(
-        title: "Equal times",
-        starts_at: now,
-        ends_at: now,
-        created_by_id: user.id,
-      )
+      ballot =
+        Ballotage::Ballot.new(
+          title: "Equal times",
+          starts_at: now,
+          ends_at: now,
+          created_by_id: user.id,
+        )
 
       expect(ballot).not_to be_valid
     end
@@ -45,11 +47,12 @@ RSpec.describe Ballotage::Ballot do
     end
 
     it "requires a title" do
-      ballot = Ballotage::Ballot.new(
-        starts_at: 1.day.from_now,
-        ends_at: 2.days.from_now,
-        created_by_id: user.id,
-      )
+      ballot =
+        Ballotage::Ballot.new(
+          starts_at: 1.day.from_now,
+          ends_at: 2.days.from_now,
+          created_by_id: user.id,
+        )
       expect(ballot).not_to be_valid
       expect(ballot.errors[:title]).to be_present
     end
