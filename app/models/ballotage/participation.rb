@@ -15,8 +15,8 @@ end
 # Table name: ballotage_participations
 #
 #  id        :bigint           not null, primary key
-#  ballot_id :integer          not null
-#  user_id   :integer          not null
+#  ballot_id :bigint           not null
+#  user_id   :bigint           not null
 #
 # Indexes
 #

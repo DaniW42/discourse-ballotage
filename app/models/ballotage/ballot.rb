@@ -113,7 +113,7 @@ end
 #  white_count   :integer          default(0), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  created_by_id :integer          not null
+#  created_by_id :bigint           not null
 #
 # Indexes
 #
