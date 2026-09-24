@@ -66,7 +66,7 @@ module Ballotage
     # transaction. update_counters does not touch updated_at, so the ballot row
     # carries no timestamp of the last vote either.
     def cast_vote!(user, choice)
-      raise Discourse::InvalidParameters.new(:choice) unless CHOICES.include?(choice)
+      raise Discourse::InvalidParameters.new(:choice) if CHOICES.exclude?(choice)
 
       transaction do
         # Row lock serialises votes against a concurrent cancel.

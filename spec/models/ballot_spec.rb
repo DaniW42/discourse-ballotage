@@ -182,7 +182,7 @@ RSpec.describe Ballotage::Ballot do
       freeze_time(10.minutes.from_now)
       ballot.cast_vote!(user, "black")
 
-      expect(ballot.reload.updated_at).to eq(original_updated_at)
+      expect(ballot.reload.updated_at).to eq_time(original_updated_at)
     end
   end
 

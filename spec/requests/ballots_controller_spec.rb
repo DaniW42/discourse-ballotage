@@ -275,10 +275,10 @@ RSpec.describe Ballotage::BallotsController do
            }
 
       ballot = Ballotage::Ballot.last
-      expect(ballot.starts_at).to eq(
+      expect(ballot.starts_at).to eq_time(
         ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 00:01"),
       )
-      expect(ballot.ends_at).to eq(
+      expect(ballot.ends_at).to eq_time(
         ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 23:59"),
       )
     end
@@ -297,10 +297,10 @@ RSpec.describe Ballotage::BallotsController do
            }
 
       ballot = Ballotage::Ballot.last
-      expect(ballot.starts_at).to eq(
+      expect(ballot.starts_at).to eq_time(
         ActiveSupport::TimeZone["Europe/Berlin"].parse("#{start_date} 09:30"),
       )
-      expect(ballot.ends_at).to eq(
+      expect(ballot.ends_at).to eq_time(
         ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 18:15"),
       )
     end
