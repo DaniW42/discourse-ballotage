@@ -1,5 +1,7 @@
 # discourse-ballotage
 
+[![Discourse Plugin](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml/badge.svg)](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml)
+
 A [Discourse](https://www.discourse.org/) plugin for **secret black/white-ball ballots**
 ("ballotage" — in German "Kugelung"), as used by clubs, societies and other membership
 organizations for admitting new members. A member either casts a black or a white ball;
@@ -16,6 +18,19 @@ who voted is recorded, but what they voted is not.
   00:01 / 23:59, or custom times), cancelled before they end, and finalized afterwards.
 - Finalizing a ballot irreversibly deletes the result and the list of who voted, leaving
   only the title, period and status.
+
+## Screenshots
+
+| Voting page | After voting |
+|---|---|
+| ![Voting page with black and white choices](docs/screenshots/vote-open.png) | ![Confirmation after the vote has been cast](docs/screenshots/vote-done.png) |
+
+| Management while open | Management after the end |
+|---|---|
+| ![Participation shown, result hidden while the ballot is open](docs/screenshots/manage-running.png) | ![Result shown once the ballot has ended](docs/screenshots/manage-ended.png) |
+
+While a ballot is open, the management page shows who has voted but not the
+black/white counts; the result appears only once the ballot has ended.
 
 ## Secrecy model
 
@@ -123,6 +138,15 @@ Discourse checkout with this plugin in `plugins/`:
 ```bash
 bundle exec rspec plugins/discourse-ballotage/spec
 ```
+
+Linting uses the standard Discourse plugin configuration (ESLint, Prettier,
+Stylelint, RuboCop, Syntax Tree), run from the Discourse checkout:
+
+```bash
+bin/lint plugins/discourse-ballotage
+```
+
+CI runs specs and linters on every push to `main` and on pull requests.
 
 ## Status
 
