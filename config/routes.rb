@@ -9,6 +9,7 @@ Ballotage::Engine.routes.draw do
   post "/ballots" => "ballots#create"
   post "/ballots/:id/cancel" => "ballots#cancel"
   post "/ballots/:id/finalize" => "ballots#finalize"
+  delete "/ballots/:id" => "ballots#destroy"
 end
 
 Discourse::Application.routes.draw { mount Ballotage::Engine, at: "/ballotage" }

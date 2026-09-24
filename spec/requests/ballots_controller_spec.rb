@@ -407,4 +407,71 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.reload.finalized?).to eq(true)
     end
   end
+
+  describe "DELETE /ballotage/ballots/:id.json" do
+    it "deletes a finalized ballot entirely" do
+      freeze_time
+      ballot = create_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      ballot.finalize!
+      sign_in(admin)
+
+      delete "/ballotage/ballots/#{ballot.id}.json"
+
+      expect(response.status).to eq(200)
+      expect(Ballotage::Ballot.exists?(ballot.id)).to eq(false)
+    end
+
+    it "refuses an ended ballot that has not been finalized, keeping its result" do
+      freeze_time
+      ballot = create_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      Ballotage::Participation.create!(ballot_id: ballot.id, user_id: voter.id)
+      ballot.update_columns(black_count: 1)
+      sign_in(admin)
+
+      delete "/ballotage/ballots/#{ballot.id}.json"
+
+      expect(response.status).to eq(422)
+      expect(ballot.reload.black_count).to eq(1)
+      expect(ballot.participations.count).to eq(1)
+    end
+
+    it "refuses an open ballot" do
+      freeze_time
+      ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      sign_in(admin)
+
+      delete "/ballotage/ballots/#{ballot.id}.json"
+
+      expect(response.status).to eq(422)
+      expect(Ballotage::Ballot.exists?(ballot.id)).to eq(true)
+    end
+
+    it "returns 403 for an oversight member without manage rights" do
+      freeze_time
+      ballot = create_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      ballot.finalize!
+      sign_in(overseer)
+
+      delete "/ballotage/ballots/#{ballot.id}.json"
+
+      expect(response.status).to eq(403)
+      expect(Ballotage::Ballot.exists?(ballot.id)).to eq(true)
+    end
+  end
+
+  describe "ballot JSON" do
+    it "marks only finalized ballots as deletable" do
+      freeze_time
+      ended = create_ballot(starts_at: 3.hours.ago, ends_at: 2.hours.ago)
+      finalized = create_ballot(starts_at: 5.hours.ago, ends_at: 4.hours.ago)
+      finalized.finalize!
+      sign_in(admin)
+
+      get "/ballotage/ballots.json"
+
+      by_id = response.parsed_body["ballots"].index_by { |b| b["id"] }
+      expect(by_id[ended.id]["deletable"]).to eq(false)
+      expect(by_id[finalized.id]["deletable"]).to eq(true)
+    end
+  end
 end

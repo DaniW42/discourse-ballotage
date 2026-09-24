@@ -124,9 +124,19 @@ export default class BallotageManage extends Component {
     });
   }
 
-  async post(url) {
+  @action
+  deleteBallot(ballot) {
+    this.dialog.deleteConfirm({
+      title: i18n("ballotage.manage.delete_title"),
+      message: i18n("ballotage.manage.confirm_delete", { title: ballot.title }),
+      didConfirm: () =>
+        this.post(`/ballotage/ballots/${ballot.id}.json`, "DELETE"),
+    });
+  }
+
+  async post(url, type = "POST") {
     try {
-      await ajax(url, { type: "POST" });
+      await ajax(url, { type });
       this.router.refresh();
     } catch (e) {
       popupAjaxError(e);
@@ -277,8 +287,16 @@ export default class BallotageManage extends Component {
                 {{#if row.finalizable}}
                   <DButton
                     @action={{fn this.finalize row}}
-                    @icon="trash-can"
+                    @icon="lock"
                     @label="ballotage.manage.finalize"
+                    class="btn-danger"
+                  />
+                {{/if}}
+                {{#if row.deletable}}
+                  <DButton
+                    @action={{fn this.deleteBallot row}}
+                    @icon="trash-can"
+                    @label="ballotage.manage.delete"
                     class="btn-danger"
                   />
                 {{/if}}

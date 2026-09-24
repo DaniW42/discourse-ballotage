@@ -65,7 +65,7 @@ handled organizationally (e.g. restrict database/console access during ballots).
 
 ## Permissions
 
-| | Vote | See who has voted (during) | See result (after end) | Create / cancel / finalize |
+| | Vote | See who has voted (during) | See result (after end) | Create / cancel / finalize / delete |
 |---|---|---|---|---|
 | Admin | no (unless also in voting group) | yes | yes | yes |
 | Oversight group member | no (unless also in voting group) | yes | yes | only if `ballotage_oversight_can_manage` is enabled |
@@ -112,6 +112,8 @@ hooks:
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
   and permanently deletes the result and the participant list — a confirmation warns
   about this before proceeding.
+- A finalized ballot can then be deleted to remove it from the list entirely. Only
+  finalized ballots can be deleted, so a result can never be lost in a single step.
 
 ## Development & tests
 
@@ -168,7 +170,8 @@ einem eigenen Menüpunkt verlinken.
 00:01–23:59, individuelle Uhrzeiten optional). Es kann immer nur eine Kugelung gleichzeitig
 geplant oder laufend sein. Sie kann vor Ablauf storniert werden; nach Ende (oder
 Stornierung) kann sie finalisiert werden — mit Warnhinweis, da dies unwiderruflich
-Ergebnis und Teilnehmerliste löscht.
+Ergebnis und Teilnehmerliste löscht. Finalisierte Kugelungen lassen sich anschließend
+ganz aus der Liste löschen.
 
 Erstveröffentlichung, noch nicht im produktiven Langzeiteinsatz erprobt. Voraussetzung:
 Discourse 2026.7 oder neuer. Lizenz: GPL-3.0.

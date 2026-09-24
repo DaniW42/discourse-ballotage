@@ -54,6 +54,10 @@ module Ballotage
       over? && !finalized?
     end
 
+    def deletable?
+      finalized?
+    end
+
     def voted?(user)
       participations.exists?(user_id: user.id)
     end

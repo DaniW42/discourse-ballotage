@@ -7,7 +7,7 @@ module Ballotage
 
     skip_before_action :check_xhr, only: :page
     before_action :ensure_can_oversee, only: :index
-    before_action :ensure_can_manage, only: %i[create cancel finalize]
+    before_action :ensure_can_manage, only: %i[create cancel finalize destroy]
 
     # GET /ballotage, /ballotage/manage — serves the Ember app; the JSON
     # endpoints below do the permission checks.
@@ -114,6 +114,18 @@ module Ballotage
       render json: manage_ballot_json(ballot)
     end
 
+    # DELETE /ballotage/ballots/:id — removes a finalized ballot from the list
+    # entirely. Only finalized ones: their result is already gone, so deleting
+    # can never destroy a result in a single step.
+    def destroy
+      ballot = Ballot.find(params[:id])
+      unless ballot.deletable?
+        return render_json_error(I18n.t("ballotage.errors.not_deletable"), status: 422)
+      end
+      ballot.destroy!
+      render json: success_json
+    end
+
     private
 
     def voter_ballot_json(ballot, has_voted:)
@@ -137,6 +149,7 @@ module Ballotage
         finalized: ballot.finalized?,
         cancellable: ballot.cancellable?,
         finalizable: ballot.finalizable?,
+        deletable: ballot.deletable?,
       }
       return json if ballot.finalized?
 
