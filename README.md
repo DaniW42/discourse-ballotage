@@ -1,6 +1,9 @@
 # discourse-ballotage
 
 [![Discourse Plugin](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml/badge.svg)](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![Discourse 2026.7+](https://img.shields.io/badge/Discourse-2026.7%2B-blue?logo=discourse)](https://www.discourse.org/)
+[![Meta topic](https://img.shields.io/badge/Meta-discussion-orange?logo=discourse)](https://meta.discourse.org/t/ballotage-secret-black-white-ball-ballots/413266)
 
 A [Discourse](https://www.discourse.org/) plugin for **secret black/white-ball ballots**
 ("ballotage" — in German "Kugelung"), as used by clubs, societies and other membership
