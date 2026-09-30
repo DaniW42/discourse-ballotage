@@ -49,8 +49,9 @@ The database is deliberately structured so that nothing in it links a member to 
 - **Counts are hidden until the ballot is over.** While a ballot is running, the
   management page shows the participant list (who has voted) but not the black/white
   counts. Showing both at the same time would let an observer match a new name appearing
-  on the list to whichever counter just moved. Once the ballot is over no further votes
-  can arrive, so the final counts are shown.
+  on the list to whichever counter just moved. Once the ballot has ended no further votes
+  can arrive, so the final counts are shown. Cancelling discards the counts instead —
+  otherwise a manager could cancel right after a single vote and read it.
 - **Finalizing is irreversible.** It deletes the participation rows and zeroes the
   counters, keeping only the ballot's title, period and status (ended/cancelled). There is
   no undo.
@@ -125,8 +126,9 @@ hooks:
   23:59 on the end day; check "custom times" to set specific start/end times instead.
 - Only one ballot can be scheduled or open at a time — the form is hidden while one is
   active.
-- A scheduled or open ballot can be cancelled; votes already cast are kept until the
-  ballot is finalized.
+- A scheduled or open ballot can be cancelled. Cancelling discards the black/white tally
+  right away, so it is never shown; the list of who voted stays until the ballot is
+  finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
   and permanently deletes the result and the participant list — a confirmation warns
   about this before proceeding.
@@ -176,7 +178,7 @@ Zeitstempel; zwei anonyme Zähler (Schwarz/Weiss) auf der Kugelung selbst führe
 keine Zeitstempel. Solange eine Kugelung läuft, zeigt die Verwaltungsseite, wer
 abgestimmt hat, aber nicht den Zwischenstand — sonst liesse sich ein neu erscheinender
 Name mit dem gerade veränderten Zähler in Verbindung bringen. Nach Ende der Kugelung wird
-das Ergebnis angezeigt. Beim Finalisieren werden Ergebnis und Teilnehmerliste
+das Ergebnis angezeigt; bei einer Stornierung wird es verworfen und nie angezeigt. Beim Finalisieren werden Ergebnis und Teilnehmerliste
 unwiderruflich gelöscht; erhalten bleiben nur Titel, Zeitraum und Status. Zu beachten
 bleibt: Wer direkten Datenbankzugriff hat und die Zähler während einer laufenden
 Kugelung live beobachtet, könnte Rückschlüsse ziehen — das lässt sich technisch nicht
@@ -195,7 +197,8 @@ einem eigenen Menüpunkt verlinken.
 
 **Nutzung:** Eine Kugelung wird mit Titel, Start- und Endtag angelegt (Standardzeiten
 00:01–23:59, individuelle Uhrzeiten optional). Es kann immer nur eine Kugelung gleichzeitig
-geplant oder laufend sein. Sie kann vor Ablauf storniert werden; nach Ende (oder
+geplant oder laufend sein. Sie kann vor Ablauf storniert werden, wobei der Zwischenstand
+verworfen wird (die Teilnehmerliste bleibt bis zum Finalisieren); nach Ende (oder
 Stornierung) kann sie finalisiert werden — mit Warnhinweis, da dies unwiderruflich
 Ergebnis und Teilnehmerliste löscht. Finalisierte Kugelungen lassen sich anschließend
 ganz aus der Liste löschen.
