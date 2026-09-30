@@ -7,6 +7,7 @@ import { LinkTo } from "@ember/routing";
 import { service } from "@ember/service";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { escapeExpression } from "discourse/lib/utilities";
 import DButton from "discourse/ui-kit/d-button";
 import { i18n } from "discourse-i18n";
 import { formatDateTime, isoDateFromToday } from "../lib/ballotage-format";
@@ -35,7 +36,8 @@ export default class BallotageManage extends Component {
       endsAt: formatDateTime(b.ends_at, tz),
       stateLabel: this.stateLabel(b),
       participation: this.participationLabel(b),
-      over: b.state === "ended" || b.state === "cancelled",
+      ended: b.state === "ended",
+      cancelled: b.state === "cancelled",
     }));
   }
 
@@ -105,10 +107,14 @@ export default class BallotageManage extends Component {
     }
   }
 
+  // Dialog messages are rendered as HTML, so the user-entered title is escaped
+  // before it is interpolated.
   @action
   cancel(ballot) {
     this.dialog.yesNoConfirm({
-      message: i18n("ballotage.manage.confirm_cancel", { title: ballot.title }),
+      message: i18n("ballotage.manage.confirm_cancel", {
+        title: escapeExpression(ballot.title),
+      }),
       didConfirm: () =>
         this.post(`/ballotage/ballots/${ballot.id}/cancel.json`),
     });
@@ -119,7 +125,7 @@ export default class BallotageManage extends Component {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.finalize_title"),
       message: i18n("ballotage.manage.confirm_finalize", {
-        title: ballot.title,
+        title: escapeExpression(ballot.title),
       }),
       confirmButtonLabel: "ballotage.manage.finalize",
       didConfirm: () =>
@@ -131,7 +137,9 @@ export default class BallotageManage extends Component {
   deleteBallot(ballot) {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.delete_title"),
-      message: i18n("ballotage.manage.confirm_delete", { title: ballot.title }),
+      message: i18n("ballotage.manage.confirm_delete", {
+        title: escapeExpression(ballot.title),
+      }),
       didConfirm: () =>
         this.post(`/ballotage/ballots/${ballot.id}.json`, "DELETE"),
     });
@@ -276,7 +284,7 @@ export default class BallotageManage extends Component {
                 </details>
               {{/if}}
 
-              {{#if row.over}}
+              {{#if row.ended}}
                 <div class="ballotage-result">
                   <span class="ballotage-result__black">
                     {{i18n "ballotage.choice.black"}}:
@@ -287,6 +295,10 @@ export default class BallotageManage extends Component {
                     <strong>{{row.white_count}}</strong>
                   </span>
                 </div>
+              {{else if row.cancelled}}
+                <p class="ballotage-hint">{{i18n
+                    "ballotage.manage.result_discarded"
+                  }}</p>
               {{else}}
                 <p class="ballotage-hint">{{i18n
                     "ballotage.manage.result_after_end"

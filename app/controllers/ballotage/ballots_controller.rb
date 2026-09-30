@@ -102,14 +102,16 @@ module Ballotage
     end
 
     # POST /ballotage/ballots/:id/cancel — scheduled or running ballots.
-    # Votes already cast are kept until the ballot is finalized.
+    # The tally is discarded in the same lock: otherwise a manager could cancel
+    # right after a single vote and read it. The participant list stays until
+    # the ballot is finalized.
     def cancel
       ballot = Ballot.find(params[:id])
       ballot.with_lock do
         unless ballot.cancellable?
           return render_json_error(I18n.t("ballotage.errors.not_cancellable"), status: 422)
         end
-        ballot.update!(cancelled_at: Time.zone.now)
+        ballot.update!(cancelled_at: Time.zone.now, black_count: 0, white_count: 0)
       end
       render json: manage_ballot_json(ballot)
     end
@@ -165,12 +167,13 @@ module Ballotage
       return json if ballot.finalized?
 
       # Participation is visible while the ballot runs; black/white only once it
-      # is over. Showing both live would let someone match a new name on the
-      # list to the counter that just moved.
+      # has ended. Showing both live would let someone match a new name on the
+      # list to the counter that just moved. Cancelled ballots never show counts
+      # (cancel zeroes them anyway).
       voters = ballot.participations.map(&:user).compact.sort_by { |u| u.username_lower }
       json[:voter_count] = voters.size
       json[:voters] = voters.map { |u| { id: u.id, username: u.username, name: u.name } }
-      if ballot.over?
+      if ballot.state == "ended"
         json[:black_count] = ballot.black_count
         json[:white_count] = ballot.white_count
       end
@@ -183,11 +186,20 @@ module Ballotage
       GroupUser.where(group_id: group_id.to_i).count
     end
 
+    # Strict: an impossible date or time is a 400, never an exception (500) or
+    # a silent rollover (zone.parse turns 2026-02-30 into 2 March).
     def parse_in_zone(zone, date, time)
-      unless date.to_s.match?(/\A\d{4}-\d{2}-\d{2}\z/) && time.to_s.match?(/\A\d{2}:\d{2}\z/)
+      date_match = date.to_s.match(/\A(\d{4})-(\d{2})-(\d{2})\z/)
+      time_match = time.to_s.match(/\A(\d{2}):(\d{2})\z/)
+      raise Discourse::InvalidParameters.new(:date) unless date_match && time_match
+
+      year, month, day = date_match.captures.map(&:to_i)
+      hour, minute = time_match.captures.map(&:to_i)
+      unless Date.valid_date?(year, month, day) && hour <= 23 && minute <= 59
         raise Discourse::InvalidParameters.new(:date)
       end
-      zone.parse("#{date} #{time}") || raise(Discourse::InvalidParameters.new(:date))
+
+      zone.parse("#{date} #{time}")
     end
 
     def ensure_can_oversee
